@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import PeriodSelector from './PeriodSelector.tsx'
+import { useAuth } from '../hooks/useAuth.tsx'
 import type { usePeriod } from '../hooks/usePeriod.ts'
 
 interface Props {
@@ -16,6 +17,8 @@ const navLinks = [
 ]
 
 export default function Sidebar({ periodState, isOpen, onClose }: Props) {
+  const { user, logout } = useAuth()
+
   return (
     <aside className={[
       'w-64 md:w-56 bg-white border-r border-gray-200 flex flex-col flex-shrink-0',
@@ -64,6 +67,26 @@ export default function Sidebar({ periodState, isOpen, onClose }: Props) {
           </NavLink>
         ))}
       </nav>
+
+      {user && (
+        <div className="p-3 border-t border-gray-100">
+          <div className="flex items-center gap-2.5 px-2 py-2">
+            {user.picture
+              ? <img src={user.picture} alt="" className="w-7 h-7 rounded-full flex-shrink-0" referrerPolicy="no-referrer" />
+              : <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{user.name[0]?.toUpperCase()}</span>
+            }
+            <span className="text-xs text-gray-600 font-medium truncate flex-1 min-w-0">{user.name}</span>
+            <button
+              onClick={logout}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              ↪
+            </button>
+          </div>
+        </div>
+      )}
     </aside>
   )
 }

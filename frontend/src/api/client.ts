@@ -1,12 +1,24 @@
-import type { Category, Card, Period, Budget, Transaction, PeriodSummary } from '../types/index.ts'
+import type { User, Category, Card, Period, Budget, Transaction, PeriodSummary } from '../types/index.ts'
 
 const BASE = '/api'
+const TOKEN_KEY = 'ft_token'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem(TOKEN_KEY)
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: { ...headers, ...(options?.headers as Record<string, string> ?? {}) },
   })
+
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem('ft_user')
+    window.location.href = '/login'
+    return undefined as T
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
     throw new Error(err.detail ?? res.statusText)
@@ -26,6 +38,14 @@ function parseDecimals(v: unknown): unknown {
 }
 
 export const api = {
+  auth: {
+    google: (token: string) =>
+      request<{ access_token: string; user: User }>('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      }),
+    me: () => request<User>('/auth/me'),
+  },
   categories: {
     list: () => request<Category[]>('/categories/'),
     create: (data: { name: string; color?: string; default_budget?: number }) =>

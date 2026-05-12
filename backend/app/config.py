@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "your_password"
     DB_NAME: str = "finance_tracker"
 
+    GOOGLE_CLIENT_ID: str = ""
+    JWT_SECRET: str = "change-me-in-production"
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

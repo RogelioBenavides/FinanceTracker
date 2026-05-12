@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import categories, cards, periods, budgets, transactions, summary
+from app.routers import categories, cards, periods, budgets, transactions, summary, auth
 
 app = FastAPI(
     title="Finance Tracker API",
@@ -17,6 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(cards.router, prefix="/api")
 app.include_router(periods.router, prefix="/api")

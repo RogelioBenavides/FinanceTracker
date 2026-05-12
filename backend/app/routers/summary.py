@@ -1,8 +1,9 @@
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 from app.database import get_db
+from app.deps import get_current_user
+from app.models.user import User
 from app.models.period import Period
 from app.models.budget import Budget
 from app.models.transaction import Transaction, TransactionItem, TransactionStatus
@@ -15,8 +16,12 @@ ZERO = Decimal("0.00")
 
 
 @router.get("/{period_id}", response_model=PeriodSummary)
-def get_period_summary(period_id: int, db: Session = Depends(get_db)):
-    period = db.query(Period).filter(Period.id == period_id).first()
+def get_period_summary(
+    period_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    period = db.query(Period).filter(Period.id == period_id, Period.user_id == current_user.id).first()
     if not period:
         raise HTTPException(status_code=404, detail="Period not found")
 
@@ -27,7 +32,6 @@ def get_period_summary(period_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
-    # Join transaction_items → transactions to get status
     rows = (
         db.query(TransactionItem, Transaction.status)
         .join(Transaction, TransactionItem.transaction_id == Transaction.id)
@@ -55,9 +59,7 @@ def get_period_summary(period_id: int, db: Session = Depends(get_db)):
         else:
             not_paid_map[item.category_id] = not_paid_map.get(item.category_id, ZERO) + item.amount
 
-    all_ids = (
-        set(budget_map) | set(paid_map) | set(pending_map) | set(not_paid_map)
-    )
+    all_ids = set(budget_map) | set(paid_map) | set(pending_map) | set(not_paid_map)
 
     summaries: list[CategorySummary] = []
     for cat_id in sorted(all_ids):

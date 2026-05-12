@@ -1,3 +1,10 @@
+export interface User {
+  id: number
+  email: string
+  name: string
+  picture: string | null
+}
+
 export interface Category {
   id: number
   name: string
