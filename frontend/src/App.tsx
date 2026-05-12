@@ -12,19 +12,9 @@ import { AuthProvider, useAuth } from './hooks/useAuth.tsx'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
 
-function AppShell() {
-  const { isAuthenticated } = useAuth()
+function AuthenticatedApp() {
   const periodState = usePeriod()
   const [menuOpen, setMenuOpen] = useState(false)
-
-  if (!isAuthenticated) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    )
-  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -69,6 +59,21 @@ function AppShell() {
       </div>
     </div>
   )
+}
+
+function AppShell() {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    )
+  }
+
+  return <AuthenticatedApp />
 }
 
 export default function App() {
