@@ -67,9 +67,9 @@ export default function Budget({ periodState }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Budget — {selectedPeriod.name}</h2>
-        <div className="text-right">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 min-w-0">Budget — {selectedPeriod.name}</h2>
+        <div className="text-right flex-shrink-0">
           <p className="text-xs text-gray-400">Total budgeted</p>
           <p className="text-xl font-bold text-gray-800">{fmt.format(totalBudget)}</p>
         </div>
@@ -127,82 +127,137 @@ export default function Budget({ periodState }: Props) {
             <p className="text-sm mt-1">Add a category budget above.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 text-left">
-                {['Category', 'Budget', 'Paid', 'Pending', 'Available', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <>
+            {/* Mobile card list */}
+            <ul className="sm:hidden divide-y divide-gray-100">
               {budgets.map((b) => {
                 const s = summaryMap.get(b.category_id)
                 const cat = categories.find((c) => c.id === b.category_id)
                 const isOver = s && s.available < 0
                 return (
-                  <tr key={b.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
+                  <li key={b.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         {cat && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />}
-                        <span className="font-medium text-gray-800">{cat?.name ?? `Category ${b.category_id}`}</span>
+                        <span className="text-sm font-semibold text-gray-800 truncate">{cat?.name ?? `Category ${b.category_id}`}</span>
                       </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      {editingId === b.id ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            value={editAmount}
-                            onChange={(e) => setEditAmount(e.target.value)}
-                            className="w-24 border border-gray-200 rounded px-2 py-0.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            min="0.01"
-                            autoFocus
-                            aria-label={`Edit budget for ${cat?.name}`}
-                          />
-                          <button
-                            onClick={() => updateBudget.mutate({ id: b.id, amount: parseFloat(editAmount) })}
-                            disabled={!editAmount || parseFloat(editAmount) <= 0 || updateBudget.isPending}
-                            className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-medium disabled:opacity-50 hover:bg-blue-700"
-                          >
-                            OK
-                          </button>
-                          <button onClick={() => setEditingId(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
-                        </div>
-                      ) : (
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => { setEditingId(b.id); setEditAmount(String(b.amount)) }} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" aria-label={`Edit ${cat?.name} budget`}><FiEdit2 size={14} /></button>
+                        <button onClick={() => confirm(`Remove budget for "${cat?.name}"?`) && deleteBudget.mutate(b.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" aria-label={`Delete ${cat?.name} budget`}><FiTrash2 size={14} /></button>
+                      </div>
+                    </div>
+                    {editingId === b.id && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <input type="number" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" min="0.01" autoFocus aria-label={`Edit budget for ${cat?.name}`} />
+                        <button onClick={() => updateBudget.mutate({ id: b.id, amount: parseFloat(editAmount) })} disabled={!editAmount || parseFloat(editAmount) <= 0 || updateBudget.isPending} className="text-xs bg-blue-600 text-white px-3 py-1 rounded font-medium disabled:opacity-50 hover:bg-blue-700">OK</button>
+                        <button onClick={() => setEditingId(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-400">Budget</span>
                         <span className="font-semibold text-gray-800">{fmt.format(b.amount)}</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-red-600 font-medium">{s ? fmt.format(s.paid) : '—'}</td>
-                    <td className="px-5 py-3 text-amber-600">{s ? fmt.format(s.pending) : '—'}</td>
-                    <td className={`px-5 py-3 font-semibold ${isOver ? 'text-red-600' : 'text-green-600'}`}>
-                      {s ? fmt.format(s.available) : fmt.format(b.amount)}
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => { setEditingId(b.id); setEditAmount(String(b.amount)) }}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          aria-label={`Edit ${cat?.name} budget`}
-                        >
-                          <FiEdit2 size={14} />
-                        </button>
-                        <button
-                          onClick={() => confirm(`Remove budget for "${cat?.name}"?`) && deleteBudget.mutate(b.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          aria-label={`Delete ${cat?.name} budget`}
-                        >
-                          <FiTrash2 size={14} />
-                        </button>
                       </div>
-                    </td>
-                  </tr>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-400">Available</span>
+                        <span className={`font-semibold ${isOver ? 'text-red-600' : 'text-green-600'}`}>{s ? fmt.format(s.available) : fmt.format(b.amount)}</span>
+                      </div>
+                      {s && s.paid > 0 && (
+                        <div className="flex justify-between gap-2">
+                          <span className="text-gray-400">Paid</span>
+                          <span className="text-red-600 font-medium">{fmt.format(s.paid)}</span>
+                        </div>
+                      )}
+                      {s && s.pending > 0 && (
+                        <div className="flex justify-between gap-2">
+                          <span className="text-gray-400">Pending</span>
+                          <span className="text-amber-600">{fmt.format(s.pending)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </li>
                 )
               })}
-            </tbody>
-          </table>
+            </ul>
+
+            {/* Desktop table */}
+            <table className="hidden sm:table w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-left">
+                  {['Category', 'Budget', 'Paid', 'Pending', 'Available', ''].map((h) => (
+                    <th key={h} className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {budgets.map((b) => {
+                  const s = summaryMap.get(b.category_id)
+                  const cat = categories.find((c) => c.id === b.category_id)
+                  const isOver = s && s.available < 0
+                  return (
+                    <tr key={b.id} className="hover:bg-gray-50">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          {cat && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />}
+                          <span className="font-medium text-gray-800">{cat?.name ?? `Category ${b.category_id}`}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        {editingId === b.id ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                              className="w-24 border border-gray-200 rounded px-2 py-0.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              min="0.01"
+                              autoFocus
+                              aria-label={`Edit budget for ${cat?.name}`}
+                            />
+                            <button
+                              onClick={() => updateBudget.mutate({ id: b.id, amount: parseFloat(editAmount) })}
+                              disabled={!editAmount || parseFloat(editAmount) <= 0 || updateBudget.isPending}
+                              className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-medium disabled:opacity-50 hover:bg-blue-700"
+                            >
+                              OK
+                            </button>
+                            <button onClick={() => setEditingId(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
+                          </div>
+                        ) : (
+                          <span className="font-semibold text-gray-800">{fmt.format(b.amount)}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-red-600 font-medium">{s ? fmt.format(s.paid) : '—'}</td>
+                      <td className="px-5 py-3 text-amber-600">{s ? fmt.format(s.pending) : '—'}</td>
+                      <td className={`px-5 py-3 font-semibold ${isOver ? 'text-red-600' : 'text-green-600'}`}>
+                        {s ? fmt.format(s.available) : fmt.format(b.amount)}
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => { setEditingId(b.id); setEditAmount(String(b.amount)) }}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            aria-label={`Edit ${cat?.name} budget`}
+                          >
+                            <FiEdit2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => confirm(`Remove budget for "${cat?.name}"?`) && deleteBudget.mutate(b.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            aria-label={`Delete ${cat?.name} budget`}
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </div>

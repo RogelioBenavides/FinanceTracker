@@ -49,7 +49,43 @@ export default function TransactionTable({ transactions, periodId }: Props) {
 
   return (
     <>
-      <div className="overflow-x-auto -mx-5">
+      {/* Mobile card list */}
+      <ul className="sm:hidden divide-y divide-gray-100 -mx-5">
+        {transactions.map((tx) => (
+          <li key={tx.id} className="px-5 py-3">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <span className="text-sm font-semibold text-gray-800 flex-1 min-w-0 truncate">{tx.description}</span>
+              <span className="text-sm font-semibold text-gray-800 flex-shrink-0">{fmt.format(tx.total_amount)}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs text-gray-400 min-w-0 flex-1">
+                <span className="flex-shrink-0">{tx.date}</span>
+                <span>·</span>
+                <span className="truncate">
+                  {tx.items.length === 1
+                    ? tx.items[0].category_name ?? '—'
+                    : `${tx.items.length} categories`}
+                </span>
+                {tx.card_name && (
+                  <><span>·</span><span className="truncate">{tx.card_name}</span></>
+                )}
+              </div>
+              <StatusBadge status={tx.status} />
+            </div>
+            <div className="flex justify-end gap-1 mt-2">
+              <button onClick={() => setEditing(tx)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" aria-label={`Edit ${tx.description}`}>
+                <FiEdit2 size={14} />
+              </button>
+              <button onClick={() => confirm(`Delete "${tx.description}"?`) && del.mutate(tx.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" aria-label={`Delete ${tx.description}`}>
+                <FiTrash2 size={14} />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto -mx-5">
         <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-100 text-left">

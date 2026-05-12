@@ -15,7 +15,7 @@ export default function BudgetSummaryBar({ totalBudget, totalPaid, totalPending,
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-      <div className="flex flex-wrap gap-6 mb-4">
+      <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-4 sm:gap-6 mb-4">
         <Stat label="Budget"    value={totalBudget}    color="text-gray-800" />
         <Stat label="Paid"      value={totalPaid}      color="text-green-600" />
         <Stat label="Pending"   value={totalPending}   color="text-amber-600" />
@@ -43,7 +43,7 @@ function Stat({ label, value, color }: { label: string; value: number; color: st
   return (
     <div>
       <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-      <p className={`text-2xl font-bold ${color}`}>{fmt.format(value)}</p>
+      <p className={`text-lg sm:text-2xl font-bold ${color}`}>{fmt.format(value)}</p>
     </div>
   )
 }

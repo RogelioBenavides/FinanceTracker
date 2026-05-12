@@ -38,7 +38,7 @@ export default function Dashboard({ periodState }: Props) {
 
   return (
     <div>
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{selectedPeriod.name}</h2>
           <p className="text-sm text-gray-400 mt-0.5">
