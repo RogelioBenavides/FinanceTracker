@@ -7,6 +7,7 @@ import TransactionForm from '../components/TransactionForm.tsx'
 import type { usePeriod } from '../hooks/usePeriod.ts'
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MXN' })
+const fmtDate = (iso: string) => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` }
 
 interface Props { periodState: ReturnType<typeof usePeriod> }
 
@@ -42,7 +43,7 @@ export default function Dashboard({ periodState }: Props) {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{selectedPeriod.name}</h2>
           <p className="text-sm text-gray-400 mt-0.5">
-            {selectedPeriod.start_date} — {selectedPeriod.end_date}
+            {fmtDate(selectedPeriod.start_date)} — {fmtDate(selectedPeriod.end_date)}
           </p>
         </div>
         <button

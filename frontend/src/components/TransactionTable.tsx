@@ -20,6 +20,7 @@ export function StatusBadge({ status }: { status: Transaction['status'] }) {
 }
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MXN' })
+const fmtDate = (iso: string) => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` }
 
 interface Props {
   transactions: Transaction[]
@@ -59,7 +60,7 @@ export default function TransactionTable({ transactions, periodId }: Props) {
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-xs text-gray-400 min-w-0 flex-1">
-                <span className="flex-shrink-0">{tx.date}</span>
+                <span className="flex-shrink-0">{fmtDate(tx.date)}</span>
                 <span>·</span>
                 <span className="truncate">
                   {tx.items.length === 1
@@ -99,7 +100,7 @@ export default function TransactionTable({ transactions, periodId }: Props) {
           <tbody className="divide-y divide-gray-50">
             {transactions.map((tx) => (
               <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-3 px-5 text-gray-500 whitespace-nowrap">{tx.date}</td>
+                <td className="py-3 px-5 text-gray-500 whitespace-nowrap">{fmtDate(tx.date)}</td>
                 <td className="py-3 px-5 text-gray-800 font-medium max-w-[200px] truncate">{tx.description}</td>
                 <td className="py-3 px-5 text-gray-500 text-xs">
                   {tx.items.length === 1

@@ -91,7 +91,7 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
         <h2 className="text-lg font-bold text-gray-800 mb-5">{transaction ? 'Edit Transaction' : 'New Transaction'}</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Date" error={errors.date?.message}>
               <input type="date" {...register('date', { required: 'Required' })} className="field" />
             </Field>
