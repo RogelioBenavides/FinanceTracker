@@ -1,3 +1,4 @@
+import hashlib
 import secrets
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
@@ -84,11 +85,14 @@ def create_api_key(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    api_key = ApiKey(key=secrets.token_urlsafe(32), name=body.name, user_id=current_user.id)
+    plaintext = secrets.token_urlsafe(32)
+    key_hash = hashlib.sha256(plaintext.encode()).hexdigest()
+    api_key = ApiKey(key=key_hash, name=body.name, user_id=current_user.id)
     db.add(api_key)
     db.commit()
     db.refresh(api_key)
-    return api_key
+    # Return plaintext once — it is never stored and cannot be retrieved again
+    return ApiKeyRead(id=api_key.id, name=api_key.name, key=plaintext, created_at=api_key.created_at)
 
 
 @router.get("/api-keys", response_model=list[ApiKeyPublic])

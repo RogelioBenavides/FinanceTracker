@@ -1,3 +1,4 @@
+import hashlib
 from typing import Optional
 from fastapi import Depends, HTTPException, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -17,7 +18,8 @@ def get_current_user(
     db: Session = Depends(get_db),
 ) -> User:
     if x_api_key is not None:
-        api_key = db.query(ApiKey).filter(ApiKey.key == x_api_key).first()
+        key_hash = hashlib.sha256(x_api_key.encode()).hexdigest()
+        api_key = db.query(ApiKey).filter(ApiKey.key == key_hash).first()
         if not api_key:
             raise HTTPException(status_code=401, detail="Invalid API key")
         user = db.query(User).filter(User.id == api_key.user_id).first()
