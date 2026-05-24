@@ -1,6 +1,7 @@
+import secrets
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 from jose import jwt
 from google.oauth2 import id_token
@@ -8,6 +9,7 @@ from google.auth.transport import requests as google_requests
 from app.database import get_db
 from app.config import settings
 from app.models.user import User
+from app.models.api_key import ApiKey
 from app.schemas.user import UserRead
 from app.deps import get_current_user
 
@@ -55,3 +57,56 @@ def google_auth(payload: GoogleTokenPayload, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserRead)
 def me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+class ApiKeyCreate(BaseModel):
+    name: str
+
+
+class ApiKeyRead(BaseModel):
+    id: int
+    name: str
+    key: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ApiKeyPublic(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.post("/api-keys", response_model=ApiKeyRead, status_code=201)
+def create_api_key(
+    body: ApiKeyCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    api_key = ApiKey(key=secrets.token_urlsafe(32), name=body.name, user_id=current_user.id)
+    db.add(api_key)
+    db.commit()
+    db.refresh(api_key)
+    return api_key
+
+
+@router.get("/api-keys", response_model=list[ApiKeyPublic])
+def list_api_keys(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return db.query(ApiKey).filter(ApiKey.user_id == current_user.id).all()
+
+
+@router.delete("/api-keys/{key_id}", status_code=204)
+def delete_api_key(
+    key_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    api_key = db.query(ApiKey).filter(ApiKey.id == key_id, ApiKey.user_id == current_user.id).first()
+    if not api_key:
+        raise HTTPException(status_code=404, detail="API key not found")
+    db.delete(api_key)
+    db.commit()
