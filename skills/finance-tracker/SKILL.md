@@ -14,13 +14,14 @@ recording spending, or asking about their transactions or categories.
 
 ## Authentication
 
-Every request must include:
+The environment variables `FINANCE_TRACKER_API_KEY` and `FINANCE_TRACKER_URL` are **pre-configured** in your environment. Do NOT ask the user for them — use them directly in every request:
+
 ```
 -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
 -H "Content-Type: application/json"
 ```
 
-Base URL is `$FINANCE_TRACKER_URL` (e.g. `http://192.168.1.100:8080`).
+Base URL is `$FINANCE_TRACKER_URL`.
 All endpoints are under `/api/`.
 
 ## Adding an expense
