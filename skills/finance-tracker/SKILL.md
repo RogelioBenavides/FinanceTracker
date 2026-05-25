@@ -30,7 +30,7 @@ Follow these steps in order:
 ### Step 1 — Get the active period
 
 ```bash
-curl -s "$FINANCE_TRACKER_URL/api/periods" \
+curl -s "$FINANCE_TRACKER_URL/api/periods/" \
   -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
 ```
 
@@ -42,10 +42,10 @@ in the app first.
 ### Step 2 — Get categories and cards (run both in parallel)
 
 ```bash
-curl -s "$FINANCE_TRACKER_URL/api/categories" \
+curl -s "$FINANCE_TRACKER_URL/api/categories/" \
   -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
 
-curl -s "$FINANCE_TRACKER_URL/api/cards" \
+curl -s "$FINANCE_TRACKER_URL/api/cards/" \
   -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
 ```
 
@@ -69,7 +69,7 @@ If the user splits the expense across multiple categories (e.g. "100 pesos: 60 f
 ### Step 4 — Create the transaction
 
 ```bash
-curl -s -X POST "$FINANCE_TRACKER_URL/api/transactions" \
+curl -s -X POST "$FINANCE_TRACKER_URL/api/transactions/" \
   -H "X-Api-Key: $FINANCE_TRACKER_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -92,7 +92,7 @@ On error, show the `detail` field from the response and ask the user to clarify.
 ## Listing recent transactions
 
 ```bash
-curl -s "$FINANCE_TRACKER_URL/api/transactions?period_id=<id>" \
+curl -s "$FINANCE_TRACKER_URL/api/transactions/?period_id=<id>" \
   -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
 ```
 
