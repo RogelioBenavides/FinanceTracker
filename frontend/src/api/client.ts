@@ -96,6 +96,8 @@ export const api = {
       items?: { category_id: number; amount: number }[]
     }) => request<Transaction>(`/transactions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => request<void>(`/transactions/${id}`, { method: 'DELETE' }),
+    bulkUpdate: (data: { transaction_ids: number[]; status?: string; card_id?: number | null; set_card?: boolean }) =>
+      request<Transaction[]>('/transactions/bulk', { method: 'PATCH', body: JSON.stringify(data) }),
   },
   summary: {
     get: (periodId: number) => request<PeriodSummary>(`/summary/${periodId}`),

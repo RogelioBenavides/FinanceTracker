@@ -92,7 +92,7 @@ export default function Transactions({ periodState }: Props) {
         {isLoading ? (
           <div className="text-gray-400 text-center py-10">Loading...</div>
         ) : (
-          <TransactionTable transactions={txs} periodId={periodId!} />
+          <TransactionTable transactions={txs} periodId={periodId!} cards={cards} />
         )}
       </div>
 

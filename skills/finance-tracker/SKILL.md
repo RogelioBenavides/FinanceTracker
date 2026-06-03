@@ -1,6 +1,6 @@
 ---
 name: finance-tracker
-description: Add and query expenses in the personal Finance Tracker app.
+description: Add, edit, and query expenses in the personal Finance Tracker app.
 metadata.openclaw.primaryEnv: FINANCE_TRACKER_API_KEY
 metadata.openclaw.requires.config:
   - FINANCE_TRACKER_API_KEY
@@ -10,7 +10,7 @@ metadata.openclaw.requires.config:
 # Finance Tracker Skill
 
 Use this skill whenever the user mentions adding an expense, logging a purchase,
-recording spending, or asking about their transactions or categories.
+recording spending, editing or updating a transaction, or asking about their transactions or categories.
 
 ## Authentication
 
@@ -90,6 +90,67 @@ On success (HTTP 201), confirm to the user:
 
 On error, show the `detail` field from the response and ask the user to clarify.
 
+## Editing a transaction
+
+### Step 1 — Find the transaction
+
+If the user refers to a transaction by description or approximate details, list transactions for the active period first:
+
+```bash
+curl -s "$FINANCE_TRACKER_URL/api/transactions/?period_id=<id>" \
+  -H "X-Api-Key: $FINANCE_TRACKER_API_KEY"
+```
+
+Match by description (case-insensitive substring). If multiple match, show the candidates and ask the user to clarify.
+
+### Step 2 — Apply the edit
+
+Send only the fields the user wants to change:
+
+```bash
+curl -s -X PUT "$FINANCE_TRACKER_URL/api/transactions/<id>" \
+  -H "X-Api-Key: $FINANCE_TRACKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "<paid|pending|not_paid>",
+    "card_id": <id or null>,
+    "date": "<YYYY-MM-DD>",
+    "description": "<description>",
+    "items": [{ "category_id": <id>, "amount": <number> }]
+  }'
+```
+
+All fields are optional — omit anything the user is not changing. If the user changes items, send the full new items array (all categories and amounts). On success, confirm:
+> Updated **\<description\>**: \<what changed\>.
+
+## Bulk editing transactions
+
+Use this when the user wants to update status or card for several transactions at once (e.g. "mark all pending ones as paid", "assign my Visa to all today's expenses").
+
+### Step 1 — Identify matching transactions
+
+List transactions and filter to those matching the user's criteria. Collect their `id` values.
+
+### Step 2 — Apply bulk update
+
+```bash
+curl -s -X PATCH "$FINANCE_TRACKER_URL/api/transactions/bulk" \
+  -H "X-Api-Key: $FINANCE_TRACKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_ids": [<id1>, <id2>, ...],
+    "status": "<paid|pending|not_paid>",
+    "set_card": true,
+    "card_id": <id or null>
+  }'
+```
+
+- Include `"status"` only if changing status.
+- Include `"set_card": true` and `"card_id"` only if changing card. Use `null` to remove the card from all selected transactions.
+- Both fields can be set in the same request.
+
+On success, confirm: > Updated **N transactions**: \<what changed\>.
+
 ## Listing recent transactions
 
 ```bash
@@ -111,3 +172,5 @@ Use the same endpoints from Step 2 and present as a simple list.
 - Amounts must be positive numbers. Do not include currency symbols in the JSON.
 - Dates must be `YYYY-MM-DD`. If the user says "today", use today's actual date.
 - If any required field is missing or ambiguous, ask before submitting.
+- When editing, never send fields the user did not ask to change.
+- For bulk edits, always show the user which transactions will be affected and confirm before applying if the count is large (more than 5).

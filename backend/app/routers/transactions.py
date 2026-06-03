@@ -8,7 +8,7 @@ from app.models.transaction import Transaction, TransactionItem
 from app.models.period import Period
 from app.models.category import Category
 from app.models.card import Card
-from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionRead, TransactionItemRead
+from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionRead, TransactionItemRead, TransactionBulkUpdate
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -73,6 +73,37 @@ def list_transactions(
         txs = [tx for tx in txs if any(i.category_id == category_id for i in tx.items)]
 
     return [_load(tx) for tx in txs]
+
+
+@router.patch("/bulk", response_model=list[TransactionRead])
+def bulk_update_transactions(
+    payload: TransactionBulkUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not payload.transaction_ids:
+        return []
+    if payload.set_card and payload.card_id is not None:
+        if not db.query(Card).filter(Card.id == payload.card_id, Card.user_id == current_user.id).first():
+            raise HTTPException(status_code=404, detail="Card not found")
+
+    txs = (
+        _q(db)
+        .join(Period, Transaction.period_id == Period.id)
+        .filter(Transaction.id.in_(payload.transaction_ids), Period.user_id == current_user.id)
+        .all()
+    )
+
+    for tx in txs:
+        if payload.status is not None:
+            tx.status = payload.status
+        if payload.set_card:
+            tx.card_id = payload.card_id
+
+    db.commit()
+    updated_ids = [tx.id for tx in txs]
+    updated = _q(db).filter(Transaction.id.in_(updated_ids)).all()
+    return [_load(tx) for tx in updated]
 
 
 @router.get("/{transaction_id}", response_model=TransactionRead)

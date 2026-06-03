@@ -84,3 +84,10 @@ class TransactionRead(BaseModel):
     items: list[TransactionItemRead]
 
     model_config = {"from_attributes": True}
+
+
+class TransactionBulkUpdate(BaseModel):
+    transaction_ids: list[int]
+    status: TransactionStatus | None = None
+    card_id: int | None = None
+    set_card: bool = False
