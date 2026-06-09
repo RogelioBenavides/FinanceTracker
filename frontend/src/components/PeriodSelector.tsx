@@ -9,12 +9,12 @@ interface Props {
 export default function PeriodSelector({ periods, periodId, setPeriodId }: Props) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Period</label>
+      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Period</label>
       {periods.length > 0 ? (
         <select
           value={periodId ?? ''}
           onChange={(e) => setPeriodId(parseInt(e.target.value))}
-          className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm border border-slate-700 rounded-lg px-3 py-2 bg-slate-800/60 text-slate-100 cursor-pointer transition-colors hover:border-slate-600 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
           aria-label="Select period"
         >
           {periods.map((p) => (
@@ -22,7 +22,7 @@ export default function PeriodSelector({ periods, periodId, setPeriodId }: Props
           ))}
         </select>
       ) : (
-        <p className="text-xs text-gray-400">No periods — add in Settings</p>
+        <p className="text-xs text-slate-500">No periods — add in Settings</p>
       )}
     </div>
   )

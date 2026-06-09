@@ -7,13 +7,13 @@ import TransactionForm from './TransactionForm.tsx'
 
 export function StatusBadge({ status }: { status: Transaction['status'] }) {
   const map = {
-    paid:     'bg-green-100 text-green-700',
-    pending:  'bg-amber-100 text-amber-700',
-    not_paid: 'bg-red-100 text-red-700',
+    paid:     'bg-emerald-500/15 text-emerald-400 ring-emerald-500/20',
+    pending:  'bg-amber-500/15 text-amber-400 ring-amber-500/20',
+    not_paid: 'bg-rose-500/15 text-rose-400 ring-rose-500/20',
   }
   const label = { paid: 'Paid', pending: 'Pending', not_paid: 'Not Paid' }
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${map[status]}`}>
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${map[status]}`}>
       {label[status]}
     </span>
   )
@@ -22,8 +22,10 @@ export function StatusBadge({ status }: { status: Transaction['status'] }) {
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MXN' })
 const fmtDate = (iso: string) => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` }
 
-const selectCls = 'text-xs border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400'
-const applyBtnCls = 'text-xs px-2.5 py-1 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
+const selectCls = 'text-xs border border-slate-700 rounded-md px-2 py-1 bg-slate-800 text-slate-200 cursor-pointer focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20'
+const applyBtnCls = 'text-xs px-2.5 py-1 rounded-md font-medium bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+const iconEditCls = 'p-1.5 text-slate-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-lg transition-colors cursor-pointer'
+const iconDelCls = 'p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer'
 
 interface Props {
   transactions: Transaction[]
@@ -85,8 +87,8 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
 
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-14 text-gray-400">
-        <p className="text-base">No transactions yet</p>
+      <div className="text-center py-14 text-slate-500">
+        <p className="text-base text-slate-300">No transactions yet</p>
         <p className="text-sm mt-1">Add your first one with the button above</p>
       </div>
     )
@@ -96,9 +98,9 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
     <>
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 text-sm">
-          <span className="font-semibold text-blue-700">{selected.size} selected</span>
-          <span className="text-blue-200 hidden sm:inline select-none">|</span>
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-2.5 text-sm">
+          <span className="font-semibold text-sky-300">{selected.size} selected</span>
+          <span className="text-sky-500/40 hidden sm:inline select-none">|</span>
           <div className="flex items-center gap-1.5">
             <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} className={selectCls} aria-label="Bulk status">
               <option value="">Set status…</option>
@@ -122,7 +124,7 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
           </div>
           <button
             onClick={() => { setSelected(new Set()); setBulkStatus(''); setBulkCard('') }}
-            className="ml-auto text-xs text-blue-400 hover:text-blue-600 font-medium"
+            className="ml-auto text-xs text-sky-400/70 hover:text-sky-300 font-medium cursor-pointer"
           >
             Clear selection
           </button>
@@ -130,25 +132,25 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
       )}
 
       {/* Mobile card list */}
-      <ul className="sm:hidden divide-y divide-gray-100 -mx-5">
+      <ul className="sm:hidden divide-y divide-slate-800 -mx-5">
         {transactions.map((tx) => (
-          <li key={tx.id} className={`px-5 py-3 ${selected.has(tx.id) ? 'bg-blue-50' : ''}`}>
+          <li key={tx.id} className={`px-5 py-3 transition-colors ${selected.has(tx.id) ? 'bg-sky-500/10' : ''}`}>
             <div className="flex items-start gap-2.5">
               <input
                 type="checkbox"
                 checked={selected.has(tx.id)}
                 onChange={() => toggleOne(tx.id)}
-                className="mt-1 h-4 w-4 shrink-0 accent-blue-600"
+                className="mt-1 h-4 w-4 shrink-0 accent-emerald-500 cursor-pointer"
                 aria-label={`Select ${tx.description}`}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <span className="text-sm font-semibold text-gray-800 flex-1 min-w-0 truncate">{tx.description}</span>
-                  <span className="text-sm font-semibold text-gray-800 flex-shrink-0">{fmt.format(tx.total_amount)}</span>
+                  <span className="text-sm font-semibold text-slate-100 flex-1 min-w-0 truncate">{tx.description}</span>
+                  <span className="text-sm font-semibold text-slate-100 flex-shrink-0 tnum">{fmt.format(tx.total_amount)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400 min-w-0 flex-1">
-                    <span className="flex-shrink-0">{fmtDate(tx.date)}</span>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 min-w-0 flex-1">
+                    <span className="flex-shrink-0 tnum">{fmtDate(tx.date)}</span>
                     <span>·</span>
                     <span className="truncate">
                       {tx.items.length === 1 ? tx.items[0].category_name ?? '—' : `${tx.items.length} categories`}
@@ -160,10 +162,10 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
                   <StatusBadge status={tx.status} />
                 </div>
                 <div className="flex justify-end gap-1 mt-2">
-                  <button onClick={() => setEditing(tx)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" aria-label={`Edit ${tx.description}`}>
+                  <button onClick={() => setEditing(tx)} className={iconEditCls} aria-label={`Edit ${tx.description}`}>
                     <FiEdit2 size={14} />
                   </button>
-                  <button onClick={() => confirm(`Delete "${tx.description}"?`) && del.mutate(tx.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" aria-label={`Delete ${tx.description}`}>
+                  <button onClick={() => confirm(`Delete "${tx.description}"?`) && del.mutate(tx.id)} className={iconDelCls} aria-label={`Delete ${tx.description}`}>
                     <FiTrash2 size={14} />
                   </button>
                 </div>
@@ -177,69 +179,61 @@ export default function TransactionTable({ transactions, periodId, cards }: Prop
       <div className="hidden sm:block overflow-x-auto -mx-5">
         <table className="w-full text-sm min-w-[680px]">
           <thead>
-            <tr className="border-b border-gray-100 text-left">
+            <tr className="border-b border-slate-800 text-left">
               <th className="pb-3 pl-5 pr-2 w-8">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   ref={(el) => { if (el) el.indeterminate = someSelected }}
                   onChange={toggleAll}
-                  className="h-4 w-4 accent-blue-600"
+                  className="h-4 w-4 accent-emerald-500 cursor-pointer"
                   aria-label="Select all transactions"
                 />
               </th>
               {['Date', 'Description', 'Category', 'Card', 'Amount', 'Status', ''].map((h) => (
-                <th key={h} className="pb-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <th key={h} className="pb-3 px-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-slate-800/70">
             {transactions.map((tx) => (
               <tr
                 key={tx.id}
-                className={`hover:bg-gray-50 transition-colors ${selected.has(tx.id) ? 'bg-blue-50 hover:bg-blue-50' : ''}`}
+                className={`transition-colors ${selected.has(tx.id) ? 'bg-sky-500/10' : 'hover:bg-slate-800/40'}`}
               >
                 <td className="py-3 pl-5 pr-2">
                   <input
                     type="checkbox"
                     checked={selected.has(tx.id)}
                     onChange={() => toggleOne(tx.id)}
-                    className="h-4 w-4 accent-blue-600"
+                    className="h-4 w-4 accent-emerald-500 cursor-pointer"
                     aria-label={`Select ${tx.description}`}
                   />
                 </td>
-                <td className="py-3 px-5 text-gray-500 whitespace-nowrap">{fmtDate(tx.date)}</td>
-                <td className="py-3 px-5 text-gray-800 font-medium max-w-[200px] truncate">{tx.description}</td>
-                <td className="py-3 px-5 text-gray-500 text-xs">
+                <td className="py-3 px-5 text-slate-400 whitespace-nowrap tnum">{fmtDate(tx.date)}</td>
+                <td className="py-3 px-5 text-slate-100 font-medium max-w-[200px] truncate">{tx.description}</td>
+                <td className="py-3 px-5 text-slate-400 text-xs">
                   {tx.items.length === 1
                     ? tx.items[0].category_name ?? '—'
                     : <span className="inline-flex items-center gap-1">
-                        <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">Split</span>
-                        <span className="text-gray-400">{tx.items.length} categories</span>
+                        <span className="bg-sky-500/15 text-sky-400 px-1.5 py-0.5 rounded font-medium">Split</span>
+                        <span className="text-slate-500">{tx.items.length} categories</span>
                       </span>
                   }
                 </td>
-                <td className="py-3 px-5 text-gray-400 text-xs">{tx.card_name ?? '—'}</td>
-                <td className="py-3 px-5 font-semibold text-gray-800 whitespace-nowrap">{fmt.format(tx.total_amount)}</td>
+                <td className="py-3 px-5 text-slate-500 text-xs">{tx.card_name ?? '—'}</td>
+                <td className="py-3 px-5 font-semibold text-slate-100 whitespace-nowrap tnum">{fmt.format(tx.total_amount)}</td>
                 <td className="py-3 px-5">
                   <StatusBadge status={tx.status} />
                 </td>
                 <td className="py-3 px-5">
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => setEditing(tx)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                      aria-label={`Edit ${tx.description}`}
-                    >
+                    <button onClick={() => setEditing(tx)} className={iconEditCls} aria-label={`Edit ${tx.description}`}>
                       <FiEdit2 size={14} />
                     </button>
-                    <button
-                      onClick={() => confirm(`Delete "${tx.description}"?`) && del.mutate(tx.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                      aria-label={`Delete ${tx.description}`}
-                    >
+                    <button onClick={() => confirm(`Delete "${tx.description}"?`) && del.mutate(tx.id)} className={iconDelCls} aria-label={`Delete ${tx.description}`}>
                       <FiTrash2 size={14} />
                     </button>
                   </div>

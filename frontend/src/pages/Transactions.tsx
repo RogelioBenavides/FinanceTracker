@@ -32,20 +32,21 @@ export default function Transactions({ periodState }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+        <h2 className="text-2xl font-bold text-slate-100 tracking-tight">Transactions</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1.5 bg-emerald-500 text-slate-950 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
         >
-          + New
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex flex-wrap items-center gap-3">
+      <div className="bg-slate-900/60 backdrop-blur rounded-2xl border border-slate-800 p-4 mb-4 flex flex-wrap items-center gap-3">
         <select
           value={filters.category_id}
           onChange={(e) => setFilters((f) => ({ ...f, category_id: parseInt(e.target.value) }))}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="text-sm border border-slate-700 rounded-lg px-3 py-1.5 bg-slate-800/60 text-slate-200 cursor-pointer focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
           aria-label="Filter by category"
         >
           <option value={0}>All categories</option>
@@ -55,7 +56,7 @@ export default function Transactions({ periodState }: Props) {
         <select
           value={filters.card_id}
           onChange={(e) => setFilters((f) => ({ ...f, card_id: parseInt(e.target.value) }))}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="text-sm border border-slate-700 rounded-lg px-3 py-1.5 bg-slate-800/60 text-slate-200 cursor-pointer focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
           aria-label="Filter by card"
         >
           <option value={0}>All cards</option>
@@ -65,7 +66,7 @@ export default function Transactions({ periodState }: Props) {
         <select
           value={filters.status}
           onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="text-sm border border-slate-700 rounded-lg px-3 py-1.5 bg-slate-800/60 text-slate-200 cursor-pointer focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
           aria-label="Filter by status"
         >
           <option value="">All statuses</option>
@@ -77,20 +78,20 @@ export default function Transactions({ periodState }: Props) {
         {hasFilters ? (
           <button
             onClick={() => setFilters({ category_id: 0, card_id: 0, status: '' })}
-            className="text-sm text-gray-400 hover:text-gray-600 font-medium"
+            className="text-sm text-slate-400 hover:text-slate-200 font-medium cursor-pointer"
           >
             Clear filters
           </button>
         ) : null}
 
-        <span className="ml-auto text-sm text-gray-400">
+        <span className="ml-auto text-sm text-slate-500 tnum">
           {txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
         </span>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-slate-900/60 backdrop-blur rounded-2xl border border-slate-800 p-5 shadow-xl shadow-black/20">
         {isLoading ? (
-          <div className="text-gray-400 text-center py-10">Loading...</div>
+          <div className="text-slate-500 text-center py-10">Loading...</div>
         ) : (
           <TransactionTable transactions={txs} periodId={periodId!} cards={cards} />
         )}

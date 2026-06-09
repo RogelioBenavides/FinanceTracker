@@ -17,10 +17,10 @@ function AuthenticatedApp() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen overflow-hidden text-slate-200">
       {menuOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
           onClick={() => setMenuOpen(false)}
         />
       )}
@@ -32,10 +32,10 @@ function AuthenticatedApp() {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-slate-900/70 backdrop-blur border-b border-slate-800 flex-shrink-0">
           <button
             onClick={() => setMenuOpen(true)}
-            className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
             aria-label="Open menu"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -44,7 +44,9 @@ function AuthenticatedApp() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <span className="font-bold text-gray-800 text-base">Finance Tracker</span>
+          <span className="font-bold text-slate-100 text-base tracking-tight">
+            Finance<span className="text-emerald-400">Tracker</span>
+          </span>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">

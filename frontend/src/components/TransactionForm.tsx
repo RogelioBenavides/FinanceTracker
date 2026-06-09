@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import DateField, { isoToDate, dateToIso } from './DateField.tsx'
 import { api } from '../api/client.ts'
 import type { Transaction } from '../types/index.ts'
 
@@ -86,14 +87,28 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
   const error = create.error ?? update.error
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-bold text-gray-800 mb-5">{transaction ? 'Edit Transaction' : 'New Transaction'}</h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-slate-900 ring-1 ring-slate-800 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-lg font-bold text-slate-100 mb-5">{transaction ? 'Edit Transaction' : 'New Transaction'}</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Date" error={errors.date?.message}>
-              <input type="date" {...register('date', { required: 'Required' })} className="field" />
+              <Controller
+                control={control}
+                name="date"
+                rules={{ required: 'Required' }}
+                render={({ field }) => (
+                  <DateField
+                    selected={isoToDate(field.value)}
+                    onChange={(d) => field.onChange(dateToIso(d))}
+                    onBlur={field.onBlur}
+                    placeholderText="Select date"
+                    className="field"
+                    wrapperClassName="w-full"
+                  />
+                )}
+              />
             </Field>
             <Field label="Card (optional)">
               <select {...register('card_id')} className="field" aria-label="Payment card">
@@ -118,8 +133,8 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
           {/* Items / split rows */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">Categories</label>
-              <button type="button" onClick={addItem} className="text-xs text-blue-600 hover:text-blue-800 font-medium">+ Split</button>
+              <label className="text-sm font-medium text-slate-300">Categories</label>
+              <button type="button" onClick={addItem} className="text-xs text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer">+ Split</button>
             </div>
             <div className="space-y-2">
               {items.map((item, idx) => (
@@ -145,33 +160,32 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
                       aria-label={`Amount for item ${idx + 1}`}
                     />
                     {items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(idx)} className="flex-shrink-0 text-gray-400 hover:text-red-500 text-lg leading-none" aria-label="Remove item">×</button>
+                      <button type="button" onClick={() => removeItem(idx)} className="flex-shrink-0 text-slate-500 hover:text-rose-400 text-lg leading-none cursor-pointer" aria-label="Remove item">×</button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
             {items.length > 1 && (
-              <div className="flex justify-end mt-2 text-sm font-semibold text-gray-700">
+              <div className="flex justify-end mt-2 text-sm font-semibold text-slate-200 tnum">
                 Total: {fmt.format(total)}
               </div>
             )}
-            {itemErrors && <p className="text-xs text-red-600 mt-1">{itemErrors}</p>}
+            {itemErrors && <p className="text-xs text-rose-400 mt-1">{itemErrors}</p>}
           </div>
 
-          {error && <p className="text-sm text-red-600">{error.message}</p>}
+          {error && <p className="text-sm text-rose-400">{error.message}</p>}
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={isPending} className="flex-1 bg-blue-600 text-white rounded-lg py-2.5 font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            <button type="submit" disabled={isPending} className="flex-1 bg-emerald-500 text-slate-950 rounded-xl py-2.5 font-semibold hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40">
               {isPending ? 'Saving...' : transaction ? 'Update' : 'Add'}
             </button>
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 rounded-lg py-2.5 font-semibold hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={onClose} className="flex-1 border border-slate-700 text-slate-300 rounded-xl py-2.5 font-semibold hover:bg-slate-800 transition-colors cursor-pointer">
               Cancel
             </button>
           </div>
         </form>
       </div>
-      <style>{`.field { width: 100%; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; outline: none; background: white; } .field:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }`}</style>
     </div>
   )
 }
@@ -179,9 +193,9 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
 function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-slate-300 mb-1">{label}</label>
       {children}
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-rose-400 mt-1">{error}</p>}
     </div>
   )
 }
