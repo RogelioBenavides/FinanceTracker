@@ -7,6 +7,8 @@ import type { usePeriod } from '../hooks/usePeriod.ts'
 
 interface Props { periodState: ReturnType<typeof usePeriod> }
 
+const fmtTotal = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MXN' })
+
 export default function Transactions({ periodState }: Props) {
   const { periodId, selectedPeriod } = periodState
   const [showForm, setShowForm] = useState(false)
@@ -28,6 +30,7 @@ export default function Transactions({ periodState }: Props) {
   if (!selectedPeriod) return null
 
   const hasFilters = filters.category_id || filters.card_id || filters.status
+  const total = txs.reduce((sum, tx) => sum + tx.total_amount, 0)
 
   return (
     <div>
@@ -84,9 +87,15 @@ export default function Transactions({ periodState }: Props) {
           </button>
         ) : null}
 
-        <span className="ml-auto text-sm text-slate-500 tnum">
-          {txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
-        </span>
+        <div className="ml-auto flex items-center gap-3 text-sm tnum">
+          <span className="text-slate-500">
+            {txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
+          </span>
+          <span className="text-slate-600 select-none">·</span>
+          <span className="text-slate-400">
+            Total <span className="font-semibold text-slate-100">{fmtTotal.format(total)}</span>
+          </span>
+        </div>
       </div>
 
       <div className="bg-slate-900/60 backdrop-blur rounded-2xl border border-slate-800 p-5 shadow-xl shadow-black/20">
