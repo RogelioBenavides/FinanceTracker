@@ -4,6 +4,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.user import User
 from app.models.card import Card
+from app.models.transaction import Transaction
 from app.schemas.card import CardCreate, CardUpdate, CardRead
 
 router = APIRouter(prefix="/cards", tags=["cards"])
@@ -80,5 +81,12 @@ def delete_card(
     card = db.query(Card).filter(Card.id == card_id, Card.user_id == current_user.id).first()
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
+    in_use = db.query(Transaction).filter(Transaction.card_id == card_id).count()
+    if in_use:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Card is used by {in_use} transaction{'s' if in_use != 1 else ''}. "
+                   "Reassign or delete them first.",
+        )
     db.delete(card)
     db.commit()

@@ -4,6 +4,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.user import User
 from app.models.category import Category
+from app.models.transaction import TransactionItem
 from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryRead
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -80,5 +81,12 @@ def delete_category(
     category = db.query(Category).filter(Category.id == category_id, Category.user_id == current_user.id).first()
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
+    in_use = db.query(TransactionItem).filter(TransactionItem.category_id == category_id).count()
+    if in_use:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Category is used by {in_use} transaction{'s' if in_use != 1 else ''}. "
+                   "Reassign or delete them first.",
+        )
     db.delete(category)
     db.commit()

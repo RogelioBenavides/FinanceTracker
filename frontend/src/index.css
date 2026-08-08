@@ -62,6 +62,12 @@ body {
 }
 .field option { background: #0b1322; color: var(--text); }
 
+/* Phones: 16px prevents iOS Safari from zooming the page on focus, and the
+   taller padding gives a comfortable tap target. */
+@media (max-width: 639px) {
+  .field { font-size: 1rem; padding: 0.625rem 0.75rem; }
+}
+
 /* Native controls follow the dark scheme (date input, selects, scrollbars) */
 :root { color-scheme: dark; }
 

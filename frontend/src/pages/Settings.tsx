@@ -212,6 +212,7 @@ function CategoriesSection() {
           <p className="text-sm text-slate-500 py-4 text-center">No categories yet</p>
         )}
       </div>
+      {del.isError && <p className="text-xs text-rose-400 mt-2">{del.error?.message}</p>}
     </Section>
   )
 }
@@ -331,6 +332,7 @@ function CardsSection() {
           <p className="text-sm text-slate-500 py-4 text-center">No payment cards yet</p>
         )}
       </div>
+      {del.isError && <p className="text-xs text-rose-400 mt-2">{del.error?.message}</p>}
     </Section>
   )
 }

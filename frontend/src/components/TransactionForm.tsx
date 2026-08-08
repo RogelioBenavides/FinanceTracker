@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useForm, useWatch, Controller } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import DateField, { isoToDate, dateToIso } from './DateField.tsx'
@@ -86,10 +87,13 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
   const isPending = create.isPending || update.isPending
   const error = create.error ?? update.error
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-slate-900 ring-1 ring-slate-800 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-bold text-slate-100 mb-5">{transaction ? 'Edit Transaction' : 'New Transaction'}</h2>
+  // Rendered into document.body: any ancestor with backdrop-blur/transform would
+  // otherwise become the containing block for `fixed`, anchoring the modal to that
+  // element instead of the viewport.
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-slate-900 ring-1 ring-slate-800 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-lg p-4 sm:p-6 max-h-[92dvh] overflow-y-auto">
+        <h2 className="text-lg font-bold text-slate-100 mb-4 sm:mb-5">{transaction ? 'Edit Transaction' : 'New Transaction'}</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -136,9 +140,16 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
               <label className="text-sm font-medium text-slate-300">Categories</label>
               <button type="button" onClick={addItem} className="text-xs text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer">+ Split</button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3 sm:space-y-2">
               {items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-2 gap-2 items-center">
+                <div
+                  key={idx}
+                  className={`grid grid-cols-1 sm:grid-cols-2 gap-2 items-center ${
+                    // Stacked on phones, so box each split row to keep its category
+                    // and amount visually paired.
+                    items.length > 1 ? 'rounded-xl border border-slate-800 p-2 sm:border-0 sm:p-0' : ''
+                  }`}
+                >
                   <select
                     value={item.category_id}
                     onChange={(e) => updateItem(idx, 'category_id', e.target.value === '' ? '' : parseInt(e.target.value))}
@@ -160,7 +171,7 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
                       aria-label={`Amount for item ${idx + 1}`}
                     />
                     {items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(idx)} className="flex-shrink-0 text-slate-500 hover:text-rose-400 text-lg leading-none cursor-pointer" aria-label="Remove item">×</button>
+                      <button type="button" onClick={() => removeItem(idx)} className="flex-shrink-0 px-2 py-1.5 text-slate-500 hover:text-rose-400 text-xl sm:text-lg leading-none cursor-pointer" aria-label="Remove item">×</button>
                     )}
                   </div>
                 </div>
@@ -176,17 +187,18 @@ export default function TransactionForm({ periodId, transaction, onClose }: Prop
 
           {error && <p className="text-sm text-rose-400">{error.message}</p>}
 
-          <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={isPending} className="flex-1 bg-emerald-500 text-slate-950 rounded-xl py-2.5 font-semibold hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+            <button type="submit" disabled={isPending} className="sm:flex-1 bg-emerald-500 text-slate-950 rounded-xl py-2.5 font-semibold hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/40">
               {isPending ? 'Saving...' : transaction ? 'Update' : 'Add'}
             </button>
-            <button type="button" onClick={onClose} className="flex-1 border border-slate-700 text-slate-300 rounded-xl py-2.5 font-semibold hover:bg-slate-800 transition-colors cursor-pointer">
+            <button type="button" onClick={onClose} className="sm:flex-1 border border-slate-700 text-slate-300 rounded-xl py-2.5 font-semibold hover:bg-slate-800 transition-colors cursor-pointer">
               Cancel
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
